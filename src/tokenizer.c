@@ -2,46 +2,62 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int space_char(char c)
-{
-  if(c == ' ' || c == '\t' || c == '\0'){
-    return 1;
-  }
-  else{
+int space_char(char c){
+  if(c == ' ' || c == '\t'){
     return 0;
   }
+  return 1;
 }
  
 int non_space_char(char c){
-if(c != ' ' || c != '\t' || c != '\0')
-  return 0;
-return 1;
+  if(c != ' ' && c != '\t' && c != '\0'){
+    return 0;
+  }
+  return 1;
 }
 
 char *word_start(char *str){
   char *pointer = str;
-  while(space_char(*pointer) != 1 && *pointer != '\0'){
-      pointer++;
+  int i = non_space_char(*pointer);
+  while(i == 0 && *pointer != '\0'){
+    i = non_space_char(*pointer);
+    if (i == 1){
+      break;
+    }
+    pointer++;
   }
   return pointer;
 }
 
+
 char *word_terminator(char *word){
   char *pointer = word;
-  while(non_space_char(*pointer) != 1 && *pointer != '\0'){
-      pointer++;
+  int i = space_char(*pointer);
+  while(i == 0 && *pointer != '\0'){
+    i = space_char(*pointer);
+    if(i == 1){
+      break;
+    }
+    pointer++;
   }
   return pointer;
 }
 
 int count_words(char *str){
   int words = 0;
-  char *pointer = str;
-  while(*pointer){
-    pointer = word_start(pointer);
-    pointer = word_terminator(pointer);
-    words++;
+  for (char *pointer = str; *pointer != '\0'; *pointer++){
+    if(*pointer == ' '&& *pointer != '\0'){
+      pointer = word_terminator(pointer);
+    }
+    if (*pointer != ' ' && *pointer != '\0'){
+      pointer = word_start(pointer);
+      words++;
+    }
+    if(pointer == NULL || *pointer == '\0'){
+      break;
+    }
   }
+  printf("%d words in the sentence\n", words++);
   return words;
 }
 
@@ -61,17 +77,27 @@ char *copy_str(char *inStr, short len){
 }
 
 char **tokenize(char* str){
+  char *pointer_word = str;
   int words = count_words(str);
-  char **tokens = (char **)malloc(sizeof(char *)* (words+1));
-  int i = 0;
-  while(i < words){
-    str = word_start(str);
-    int len = word_terminator(str) - word_start(str);
-    tokens[i] = copy_str(str, len);
-    str = word_start(word_terminator(str));
-    i++;
+  char **tokens = (char **) malloc(sizeof(char *) * (words+1));
+  int iter = 0;
+  int empty_spaces = 0;
+  short len = 0;
+  while (iter <= words && *pointer_word != '\0'){
+    for(char *pointer = pointer_word; *pointer != '\0' && *pointer != ' '; pointer++){
+	len++;
+    }
+    tokens[iter] = copy_str(pointer_word, len);
+    pointer_word += len;
+    for (char *pointer = pointer_word; *pointer != '\0' && *pointer == ' ';pointer++){
+      empty_spaces++;
+    }
+    pointer_word += empty_spaces;
+    len = 0;
+    empty_spaces = 0;
+    iter++;
   }
-  tokens[words] = 0;
+  tokens[iter+1] = copy_str(pointer_word,0);
   return tokens;
 }
 
